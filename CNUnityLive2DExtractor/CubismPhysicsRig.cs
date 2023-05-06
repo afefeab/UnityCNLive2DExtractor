@@ -39,7 +39,7 @@ namespace UnityLive2DExtractor
         public float Acceleration;
         public float Radius;
 
-        public CubismPhysicsParticle(BinaryReader reader)
+        public CubismPhysicsParticle(EndianBinaryReader reader)
         {
             InitialPosition = reader.ReadVector2();
             Mobility = reader.ReadSingle();
@@ -59,7 +59,7 @@ namespace UnityLive2DExtractor
         public CubismPhysicsSourceComponent SourceComponent;
         public bool IsInverted;
 
-        public CubismPhysicsOutput(BinaryReader reader)
+        public CubismPhysicsOutput(EndianBinaryReader reader)
         {
             DestinationId = reader.ReadAlignedString();
             ParticleIndex = reader.ReadInt32();
@@ -89,7 +89,7 @@ namespace UnityLive2DExtractor
         public CubismPhysicsSourceComponent SourceComponent;
         public bool IsInverted;
 
-        public CubismPhysicsInput(BinaryReader reader)
+        public CubismPhysicsInput(EndianBinaryReader reader)
         {
             SourceId = reader.ReadAlignedString();
             ScaleOfTranslation = reader.ReadVector2();
@@ -108,7 +108,7 @@ namespace UnityLive2DExtractor
         public CubismPhysicsParticle[] Particles;
         public CubismPhysicsNormalization Normalization;
 
-        public CubismPhysicsSubRig(BinaryReader reader)
+        public CubismPhysicsSubRig(EndianBinaryReader reader)
         {
             var numInput = reader.ReadInt32();
             Input = new CubismPhysicsInput[numInput];
@@ -136,7 +136,7 @@ namespace UnityLive2DExtractor
     {
         public CubismPhysicsSubRig[] SubRigs;
 
-        public CubismPhysicsRig(BinaryReader reader)
+        public CubismPhysicsRig(EndianBinaryReader reader)
         {
             var numSubRigs = reader.ReadInt32();
             SubRigs = new CubismPhysicsSubRig[numSubRigs];

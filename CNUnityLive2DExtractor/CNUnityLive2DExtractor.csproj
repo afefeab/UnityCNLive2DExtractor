@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>UnityLive2DExtractor</RootNamespace>
+    <AssemblyName>UnityLive2DExtractor</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AssetStudio">
+      <HintPath>Libraries\AssetStudio.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4">
+      <HintPath>Libraries\K4os.Compression.LZ4.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="Libraries\Keys.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Keys.json</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Kyaru.Texture2DDecoder" Version="0.17.0" />
+    <PackageReference Include="Kyaru.Texture2DDecoder.Windows" Version="0.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+  </ItemGroup>
+</Project>

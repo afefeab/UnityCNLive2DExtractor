@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using AssetStudio;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace UnityLive2DExtractor
 {
@@ -13,10 +14,23 @@ namespace UnityLive2DExtractor
     {
         static void Main(string[] args)
         {
-            if (args.Length != 1)
+            if (args.Length != 2)
                 return;
             if (!Directory.Exists(args[0]))
                 return;
+            if (!int.TryParse(args[1], out var index))
+            {
+                Console.WriteLine("Invalid value, not a integer !!");
+                return;
+            }
+            if (!CNUnityKeyManager.TryGetEntry(index, out var cnunity))
+            {
+                Console.WriteLine("Invalid key index !!");
+                Console.WriteLine($"Available Options: \n{CNUnityKeyManager.ToString()}");
+                return;
+            }
+            CNUnity.SetKey(cnunity);
+            Console.WriteLine($"[CNUnity] Selected Key is {cnunity}");
             Console.WriteLine($"Loading...");
             var assetsManager = new AssetsManager();
             assetsManager.LoadFolder(args[0]);
@@ -143,10 +157,24 @@ namespace UnityLive2DExtractor
                 var textures = new SortedSet<string>();
                 foreach (var texture2D in texture2Ds)
                 {
-                    using (var bitmap = new Texture2DConverter(texture2D).ConvertToBitmap(true))
+                    var texture2dConverter = new Texture2DConverter(texture2D);
+                    var buff = BigArrayPool<byte>.Shared.Rent(texture2D.m_Width * texture2D.m_Height * 4);
+                    try
                     {
-                        textures.Add($"textures/{texture2D.m_Name}.png");
-                        bitmap.Save($"{destTexturePath}{texture2D.m_Name}.png", ImageFormat.Png);
+                        if (texture2dConverter.DecodeTexture2D(buff))
+                        {
+                            textures.Add($"textures/{texture2D.m_Name}.png");
+                            var image = Image.LoadPixelData<Bgra32>(buff, texture2D.m_Width, texture2D.m_Height);
+                            using (image)
+                            {
+                                using var file = File.OpenWrite($"{destTexturePath}{texture2D.m_Name}.png");
+                                image.WriteToStream(file, ImageFormat.Png);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        BigArrayPool<byte>.Shared.Return(buff);
                     }
                 }
                 //motion
