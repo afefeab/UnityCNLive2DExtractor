@@ -1,4 +1,4 @@
-# UnityLive2DExtractor
+# CNUnityLive2DExtractor
 用于从Unity AssetBundle中提取Live2D Cubism 3文件
 
 Used to extract Live2D Cubism 3 files from Unity AssetBundle
@@ -9,7 +9,7 @@ Used to extract Live2D Cubism 3 files from Unity AssetBundle
 Drag and drop the Live2D folder to the exe. Please put multiple Live2D files into a folder, and the `Live2DOutput` directory will be generated in the directory where the folder is located
 
 ## Command-line
-UnityLive2DExtractor.exe live2dfolder
+UnityLive2DExtractor.exe live2dfolder key_index
 
 ## Requirements
-- [.NET Framework 4.7.2](https://dotnet.microsoft.com/download/dotnet-framework/net472)
+- [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
