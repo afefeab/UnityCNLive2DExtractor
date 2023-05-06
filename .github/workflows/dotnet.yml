@@ -25,4 +25,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: CNUnityLive2DExtractor
-        path: CNUnityLive2DExtractor/bin/Release/net7.0/publish
+        path: CNUnityLive2DExtractor/bin/Release/net6.0/publish
