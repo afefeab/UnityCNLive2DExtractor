@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace UnityLive2DExtractor
 {
@@ -15,7 +16,11 @@ namespace UnityLive2DExtractor
         static void Main(string[] args)
         {
             if (args.Length != 2)
+            {
+                Console.WriteLine("CNUnityLive2DExtractor {game_path} {key_index}");
+                Console.WriteLine($"Available Options: \n{CNUnityKeyManager.ToString()}");
                 return;
+            }
             if (!Directory.Exists(args[0]))
                 return;
             if (!int.TryParse(args[1], out var index))
@@ -168,6 +173,7 @@ namespace UnityLive2DExtractor
                             using (image)
                             {
                                 using var file = File.OpenWrite($"{destTexturePath}{texture2D.m_Name}.png");
+                                image.Mutate(x => x.Flip(FlipMode.Vertical));
                                 image.WriteToStream(file, ImageFormat.Png);
                             }
                         }

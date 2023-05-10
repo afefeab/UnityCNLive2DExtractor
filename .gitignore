@@ -338,3 +338,4 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/CNUnityLive2DExtractor/Properties/launchSettings.json
