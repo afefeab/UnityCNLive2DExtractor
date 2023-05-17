@@ -1,4 +1,4 @@
-# CNUnityLive2DExtractor
+# UnityCNLive2DExtractor
 用于从Unity AssetBundle中提取Live2D Cubism 3文件
 
 Used to extract Live2D Cubism 3 files from Unity AssetBundle
