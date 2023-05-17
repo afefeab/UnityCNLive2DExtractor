@@ -17,8 +17,8 @@ namespace UnityLive2DExtractor
         {
             if (args.Length != 2)
             {
-                Console.WriteLine("CNUnityLive2DExtractor {game_path} {key_index}");
-                Console.WriteLine($"Available Options: \n{CNUnityKeyManager.ToString()}");
+                Console.WriteLine("UnityCNLive2DExtractor {game_path} {key_index}");
+                Console.WriteLine($"Available Options: \n{UnityCNKeyManager.ToString()}");
                 return;
             }
             if (!Directory.Exists(args[0]))
@@ -28,14 +28,14 @@ namespace UnityLive2DExtractor
                 Console.WriteLine("Invalid value, not a integer !!");
                 return;
             }
-            if (!CNUnityKeyManager.TryGetEntry(index, out var cnunity))
+            if (!UnityCNKeyManager.TryGetEntry(index, out var unityCN))
             {
                 Console.WriteLine("Invalid key index !!");
-                Console.WriteLine($"Available Options: \n{CNUnityKeyManager.ToString()}");
+                Console.WriteLine($"Available Options: \n{UnityCNKeyManager.ToString()}");
                 return;
             }
-            CNUnity.SetKey(cnunity);
-            Console.WriteLine($"[CNUnity] Selected Key is {cnunity}");
+            UnityCN.SetKey(unityCN);
+            Console.WriteLine($"[UnityCN] Selected Key is {unityCN}");
             Console.WriteLine($"Loading...");
             var assetsManager = new AssetsManager();
             assetsManager.LoadFolder(args[0]);
