@@ -18,7 +18,7 @@ namespace UnityLive2DExtractor
             if (args.Length != 2)
             {
                 Console.WriteLine("UnityCNLive2DExtractor {game_path} {key_index}");
-                Console.WriteLine($"Available Options: \n{UnityCNKeyManager.ToString()}");
+                Console.WriteLine($"Available Options: \n{UnityCNManager.ToString()}");
                 return;
             }
             if (!Directory.Exists(args[0]))
@@ -28,16 +28,16 @@ namespace UnityLive2DExtractor
                 Console.WriteLine("Invalid value, not a integer !!");
                 return;
             }
-            if (!UnityCNKeyManager.TryGetEntry(index, out var unityCN))
+            if (!UnityCNManager.TryGetEntry(index, out var unityCN))
             {
                 Console.WriteLine("Invalid key index !!");
-                Console.WriteLine($"Available Options: \n{UnityCNKeyManager.ToString()}");
+                Console.WriteLine($"Available Options: \n{UnityCNManager.ToString()}");
                 return;
             }
+            var assetsManager = new AssetsManager() { Game = GameManager.GetGame(GameType.UnityCN) };
             UnityCN.SetKey(unityCN);
             Console.WriteLine($"[UnityCN] Selected Key is {unityCN}");
             Console.WriteLine($"Loading...");
-            var assetsManager = new AssetsManager();
             assetsManager.LoadFolder(args[0]);
             if (assetsManager.assetsFileList.Count == 0)
                 return;
@@ -359,123 +359,132 @@ namespace UnityLive2DExtractor
 
         private static string ParsePhysics(MonoBehaviour physics)
         {
-            var reader = physics.reader;
-            reader.Reset();
-            reader.Position += 28; //PPtr<GameObject> m_GameObject, m_Enabled, PPtr<MonoScript>
-            reader.ReadAlignedString(); //m_Name
-            var cubismPhysicsRig = new CubismPhysicsRig(reader);
+            try
+            {
+                var reader = physics.reader;
+                reader.Reset();
+                reader.Position += 28; //PPtr<GameObject> m_GameObject, m_Enabled, PPtr<MonoScript>
+                reader.ReadAlignedString(); //m_Name
+                var cubismPhysicsRig = new CubismPhysicsRig(reader);
 
-            var physicsSettings = new CubismPhysics3Json.SerializablePhysicsSettings[cubismPhysicsRig.SubRigs.Length];
-            for (int i = 0; i < physicsSettings.Length; i++)
-            {
-                var subRigs = cubismPhysicsRig.SubRigs[i];
-                physicsSettings[i] = new CubismPhysics3Json.SerializablePhysicsSettings
+                var physicsSettings = new CubismPhysics3Json.SerializablePhysicsSettings[cubismPhysicsRig.SubRigs.Length];
+                for (int i = 0; i < physicsSettings.Length; i++)
                 {
-                    Id = $"PhysicsSetting{i + 1}",
-                    Input = new CubismPhysics3Json.SerializableInput[subRigs.Input.Length],
-                    Output = new CubismPhysics3Json.SerializableOutput[subRigs.Output.Length],
-                    Vertices = new CubismPhysics3Json.SerializableVertex[subRigs.Particles.Length],
-                    Normalization = new CubismPhysics3Json.SerializableNormalization
+                    var subRigs = cubismPhysicsRig.SubRigs[i];
+                    physicsSettings[i] = new CubismPhysics3Json.SerializablePhysicsSettings
                     {
-                        Position = new CubismPhysics3Json.SerializableNormalizationValue
+                        Id = $"PhysicsSetting{i + 1}",
+                        Input = new CubismPhysics3Json.SerializableInput[subRigs.Input.Length],
+                        Output = new CubismPhysics3Json.SerializableOutput[subRigs.Output.Length],
+                        Vertices = new CubismPhysics3Json.SerializableVertex[subRigs.Particles.Length],
+                        Normalization = new CubismPhysics3Json.SerializableNormalization
                         {
-                            Minimum = subRigs.Normalization.Position.Minimum,
-                            Default = subRigs.Normalization.Position.Default,
-                            Maximum = subRigs.Normalization.Position.Maximum
-                        },
-                        Angle = new CubismPhysics3Json.SerializableNormalizationValue
-                        {
-                            Minimum = subRigs.Normalization.Angle.Minimum,
-                            Default = subRigs.Normalization.Angle.Default,
-                            Maximum = subRigs.Normalization.Angle.Maximum
+                            Position = new CubismPhysics3Json.SerializableNormalizationValue
+                            {
+                                Minimum = subRigs.Normalization.Position.Minimum,
+                                Default = subRigs.Normalization.Position.Default,
+                                Maximum = subRigs.Normalization.Position.Maximum
+                            },
+                            Angle = new CubismPhysics3Json.SerializableNormalizationValue
+                            {
+                                Minimum = subRigs.Normalization.Angle.Minimum,
+                                Default = subRigs.Normalization.Angle.Default,
+                                Maximum = subRigs.Normalization.Angle.Maximum
+                            }
                         }
+                    };
+                    for (int j = 0; j < subRigs.Input.Length; j++)
+                    {
+                        var input = subRigs.Input[j];
+                        physicsSettings[i].Input[j] = new CubismPhysics3Json.SerializableInput
+                        {
+                            Source = new CubismPhysics3Json.SerializableParameter
+                            {
+                                Target = "Parameter", //同名GameObject父节点的名称
+                                Id = input.SourceId
+                            },
+                            Weight = input.Weight,
+                            Type = Enum.GetName(typeof(CubismPhysicsSourceComponent), input.SourceComponent),
+                            Reflect = input.IsInverted
+                        };
                     }
-                };
-                for (int j = 0; j < subRigs.Input.Length; j++)
-                {
-                    var input = subRigs.Input[j];
-                    physicsSettings[i].Input[j] = new CubismPhysics3Json.SerializableInput
+                    for (int j = 0; j < subRigs.Output.Length; j++)
                     {
-                        Source = new CubismPhysics3Json.SerializableParameter
+                        var output = subRigs.Output[j];
+                        physicsSettings[i].Output[j] = new CubismPhysics3Json.SerializableOutput
                         {
-                            Target = "Parameter", //同名GameObject父节点的名称
-                            Id = input.SourceId
-                        },
-                        Weight = input.Weight,
-                        Type = Enum.GetName(typeof(CubismPhysicsSourceComponent), input.SourceComponent),
-                        Reflect = input.IsInverted
+                            Destination = new CubismPhysics3Json.SerializableParameter
+                            {
+                                Target = "Parameter", //同名GameObject父节点的名称
+                                Id = output.DestinationId
+                            },
+                            VertexIndex = output.ParticleIndex,
+                            Scale = output.AngleScale,
+                            Weight = output.Weight,
+                            Type = Enum.GetName(typeof(CubismPhysicsSourceComponent), output.SourceComponent),
+                            Reflect = output.IsInverted
+                        };
+                    }
+                    for (int j = 0; j < subRigs.Particles.Length; j++)
+                    {
+                        var particles = subRigs.Particles[j];
+                        physicsSettings[i].Vertices[j] = new CubismPhysics3Json.SerializableVertex
+                        {
+                            Position = new CubismPhysics3Json.SerializableVector2
+                            {
+                                X = particles.InitialPosition.X,
+                                Y = particles.InitialPosition.Y
+                            },
+                            Mobility = particles.Mobility,
+                            Delay = particles.Delay,
+                            Acceleration = particles.Acceleration,
+                            Radius = particles.Radius
+                        };
+                    }
+                }
+                var physicsDictionary = new CubismPhysics3Json.SerializablePhysicsDictionary[physicsSettings.Length];
+                for (int i = 0; i < physicsSettings.Length; i++)
+                {
+                    physicsDictionary[i] = new CubismPhysics3Json.SerializablePhysicsDictionary
+                    {
+                        Id = $"PhysicsSetting{i + 1}",
+                        Name = $"Dummy{i + 1}"
                     };
                 }
-                for (int j = 0; j < subRigs.Output.Length; j++)
+                var physicsJson = new CubismPhysics3Json
                 {
-                    var output = subRigs.Output[j];
-                    physicsSettings[i].Output[j] = new CubismPhysics3Json.SerializableOutput
+                    Version = 3,
+                    Meta = new CubismPhysics3Json.SerializableMeta
                     {
-                        Destination = new CubismPhysics3Json.SerializableParameter
+                        PhysicsSettingCount = cubismPhysicsRig.SubRigs.Length,
+                        TotalInputCount = cubismPhysicsRig.SubRigs.Sum(x => x.Input.Length),
+                        TotalOutputCount = cubismPhysicsRig.SubRigs.Sum(x => x.Output.Length),
+                        VertexCount = cubismPhysicsRig.SubRigs.Sum(x => x.Particles.Length),
+                        EffectiveForces = new CubismPhysics3Json.SerializableEffectiveForces
                         {
-                            Target = "Parameter", //同名GameObject父节点的名称
-                            Id = output.DestinationId
+                            Gravity = new CubismPhysics3Json.SerializableVector2
+                            {
+                                X = 0,
+                                Y = -1
+                            },
+                            Wind = new CubismPhysics3Json.SerializableVector2
+                            {
+                                X = 0,
+                                Y = 0
+                            }
                         },
-                        VertexIndex = output.ParticleIndex,
-                        Scale = output.AngleScale,
-                        Weight = output.Weight,
-                        Type = Enum.GetName(typeof(CubismPhysicsSourceComponent), output.SourceComponent),
-                        Reflect = output.IsInverted
-                    };
-                }
-                for (int j = 0; j < subRigs.Particles.Length; j++)
-                {
-                    var particles = subRigs.Particles[j];
-                    physicsSettings[i].Vertices[j] = new CubismPhysics3Json.SerializableVertex
-                    {
-                        Position = new CubismPhysics3Json.SerializableVector2
-                        {
-                            X = particles.InitialPosition.X,
-                            Y = particles.InitialPosition.Y
-                        },
-                        Mobility = particles.Mobility,
-                        Delay = particles.Delay,
-                        Acceleration = particles.Acceleration,
-                        Radius = particles.Radius
-                    };
-                }
-            }
-            var physicsDictionary = new CubismPhysics3Json.SerializablePhysicsDictionary[physicsSettings.Length];
-            for (int i = 0; i < physicsSettings.Length; i++)
-            {
-                physicsDictionary[i] = new CubismPhysics3Json.SerializablePhysicsDictionary
-                {
-                    Id = $"PhysicsSetting{i + 1}",
-                    Name = $"Dummy{i + 1}"
-                };
-            }
-            var physicsJson = new CubismPhysics3Json
-            {
-                Version = 3,
-                Meta = new CubismPhysics3Json.SerializableMeta
-                {
-                    PhysicsSettingCount = cubismPhysicsRig.SubRigs.Length,
-                    TotalInputCount = cubismPhysicsRig.SubRigs.Sum(x => x.Input.Length),
-                    TotalOutputCount = cubismPhysicsRig.SubRigs.Sum(x => x.Output.Length),
-                    VertexCount = cubismPhysicsRig.SubRigs.Sum(x => x.Particles.Length),
-                    EffectiveForces = new CubismPhysics3Json.SerializableEffectiveForces
-                    {
-                        Gravity = new CubismPhysics3Json.SerializableVector2
-                        {
-                            X = 0,
-                            Y = -1
-                        },
-                        Wind = new CubismPhysics3Json.SerializableVector2
-                        {
-                            X = 0,
-                            Y = 0
-                        }
+                        PhysicsDictionary = physicsDictionary
                     },
-                    PhysicsDictionary = physicsDictionary
-                },
-                PhysicsSettings = physicsSettings
-            };
-            return JsonConvert.SerializeObject(physicsJson, Formatting.Indented, new MyJsonConverter2());
+                    PhysicsSettings = physicsSettings
+                };
+                return JsonConvert.SerializeObject(physicsJson, Formatting.Indented, new MyJsonConverter2());
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error while exporting physics with name: {physics.m_Name}\nReason: {ex}");
+            }
+
+            return string.Empty;
         }
 
         private static byte[] ParseMoc(MonoBehaviour moc)

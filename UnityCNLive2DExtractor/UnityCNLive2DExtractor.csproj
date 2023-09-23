@@ -13,6 +13,9 @@
     <Reference Include="K4os.Compression.LZ4">
       <HintPath>Libraries\K4os.Compression.LZ4.dll</HintPath>
     </Reference>
+	<Reference Include="ZstdSharp">
+	  <HintPath>Libraries\ZstdSharp.dll</HintPath>
+	</Reference>
   </ItemGroup>
   <ItemGroup>
     <ContentWithTargetPath Include="Libraries\Keys.json">
