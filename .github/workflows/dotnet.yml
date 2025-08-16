@@ -22,7 +22,7 @@ jobs:
     - name: Build
       run: dotnet publish --configuration Release --no-restore
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: UnityCNLive2DExtractor
         path: UnityCNLive2DExtractor/bin/Release/net6.0/publish
